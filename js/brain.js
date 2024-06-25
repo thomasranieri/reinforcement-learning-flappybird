@@ -33,8 +33,8 @@ var Q_table = {};
  * (2) Jump: Push the flappy bird upwards
  */
 var actionSet = {
-  STAY : 0,
-  JUMP : 1
+  STAY: 0,
+  JUMP: 1
 };
 
 /**
@@ -75,11 +75,11 @@ var trials = 0;
  * @param {*} action The action to be taken
  */
 function getQ(state, action) {
-  var config = [ state.diffY, state.speedY, state.tubeX, action ];
+  var config = [state.diffY, state.speedY, state.tubeX, action];
   if (!(config in Q_table)) {
-     // If there's no entry in the given Q-table for the given state-action
-     // pair, return a default reward score as 0
-     return 0;
+    // If there's no entry in the given Q-table for the given state-action
+    // pair, return a default reward score as 0
+    return 0;
   }
   return Q_table[config];
 }
@@ -91,7 +91,7 @@ function getQ(state, action) {
  * @param {*} reward The reward to be awarded for the state-action pair 
  */
 function setQ(state, action, reward) {
-  var config = [ state.diffY, state.speedY, state.tubeX, action ];
+  var config = [state.diffY, state.speedY, state.tubeX, action];
   if (!(config in Q_table)) {
     Q_table[config] = 0;
   }
@@ -109,18 +109,18 @@ function getAction(state) {
   // takes a random decision without looking up the Q-table to explore a new
   // possibility. This is to help the flappy bird to not get stuck on a single
   // path.
-  var takeRandomDecision = Math.ceil(Math.random() * 100000)%90001;
+  var takeRandomDecision = Math.ceil(Math.random() * 100000) % 90001;
   if (takeRandomDecision == 0) {
     console.log("Going random baby!");
     // 1 out of 4 times, it'll take a decision to jump
-    var shouldJump = ((Math.random() * 100 )%4 == 0);
+    var shouldJump = ((Math.random() * 100) % 4 == 0);
     if (shouldJump) {
-        return actionSet.JUMP;
+      return actionSet.JUMP;
     } else {
-        return actionSet.STAY;
+      return actionSet.STAY;
     }
   }
-  
+
   // Lookup the Q-table for rewards corresponding to Jump and Stay action for
   // the given state
   var rewardForStay = getQ(state, actionSet.STAY);
@@ -138,12 +138,12 @@ function getAction(state) {
     // probability of jumping is lower as compared to stay to mimic the natural
     // scenario We press jump much less occasionally than we let the flappy bird
     // fall
-    var shouldJump = (Math.ceil( Math.random() * 100 )%25 == 0); 
+    var shouldJump = (Math.ceil(Math.random() * 100) % 25 == 0);
     if (shouldJump) {
-        return actionSet.JUMP;
+      return actionSet.JUMP;
     } else {
-        return actionSet.STAY;
-    }    
+      return actionSet.STAY;
+    }
   }
 }
 
@@ -170,20 +170,20 @@ function rewardTheBird(reward, wasSuccessful) {
   var minFramSize = 5;
   // Tolerable deviation from the ideal passage position between the tubes in px
   var theta = 1;
-  
+
   var frameSize = Math.max(minFramSize, episodeFrameCount);
-    
+
   // Iterate over the state-action sequence trail, from the most recent to the
   // most oldest
-  for (var i = frameBuffer.length-2; i >= 0 && frameSize > 0; i--) {
+  for (var i = frameBuffer.length - 2; i >= 0 && frameSize > 0; i--) {
     var config = frameBuffer[i];
-    var state  = config.env;
+    var state = config.env;
     var action = config.action;
-    
+
     // The reward for the state is influenced by how close the flappy bird was
     // from the ideal passage position
     var rewardForState = (reward - Math.abs(state.diffY));
-    
+
     // Determine if the reward for given state-action pair should be positive or
     // negative
     if (!wasSuccessful) {
@@ -191,7 +191,7 @@ function rewardTheBird(reward, wasSuccessful) {
         // If the bird was above the ideal passage position and it still decided
         // to jump, reward negatively
         rewardForState = -rewardForState;
-      } else if(state.diffY <= -theta && action == actionSet.STAY) {
+      } else if (state.diffY <= -theta && action == actionSet.STAY) {
         // If the bird was below the ideal passage position and it still decided
         // to not jump (stay), reward negatively
         rewardForState = -rewardForState;
@@ -200,36 +200,91 @@ function rewardTheBird(reward, wasSuccessful) {
         rewardForState = +0.5;
       }
     }
-    
+
     // Update the Q-value for the state-action pair according to the Q-learning
     // algorithm Ref: https://en.wikipedia.org/wiki/Q-learning
-    var futureState = frameBuffer[i+1].env;
-    var optimalFutureValue = Math.max(getQ(futureState, actionSet.STAY), 
-                                      getQ(futureState, actionSet.JUMP));
-    var updateValue = alpha*(rewardForState + gamma * optimalFutureValue - getQ(state, action));
+    var futureState = frameBuffer[i + 1].env;
+    var optimalFutureValue = Math.max(getQ(futureState, actionSet.STAY),
+      getQ(futureState, actionSet.JUMP));
+    var updateValue = alpha * (rewardForState + gamma * optimalFutureValue - getQ(state, action));
 
     setQ(state, action, updateValue)
     frameSize--;
- }
- // Allocating reward is complete, hence clear the frame buffer but still try to
- // maintain the most recent 5 state-action pair Since the last actions taken in
- // the previous episode affects the position of the bird in the next episdoe
- frameBuffer = frameBuffer.slice(Math.max(frameBuffer.length-minFramSize, 1));
- episodeFrameCount = 0;
+  }
+  // Allocating reward is complete, hence clear the frame buffer but still try to
+  // maintain the most recent 5 state-action pair Since the last actions taken in
+  // the previous episode affects the position of the bird in the next episdoe
+  frameBuffer = frameBuffer.slice(Math.max(frameBuffer.length - minFramSize, 1));
+  episodeFrameCount = 0;
 }
+
+
+
+var plotly = document.getElementById('plot');
+var data = [];
+var layout = {
+	uirevision:'true',
+};
+Plotly.newPlot(plotly, data, layout);
 
 /**
  * Function to negatively reward the flappy bird when the game is over
  */
 function triggerGameOver() {
-  var reward =  100;
+  var reward = 100;
   rewardTheBird(reward, false);
-  console.log( "GameOver:", score, Object.keys(Q_table).length, trials );
+  console.log("GameOver:", score, Object.keys(Q_table).length, trials);
 
   // Reset the episode flag
   targetTubeIndex = -1;
   episodeFrameCount = 0;
   trials++;
+
+  //update graph
+  var data = [{
+    x: [],
+    y: [],
+    z: [],
+    labels: ['speedX', 'tubeX', 'diffY'],
+    marker: {
+      color: 'blue',
+      size: 3
+    },
+    type: 'scatter3d',
+    mode: 'markers'
+  },
+  {
+    x: [],
+    y: [],
+    z: [],
+    labels: ['speedX', 'tubeX', 'diffY'],
+    marker: {
+      color: 'red',
+      size: 3
+    },
+    type: 'scatter3d',
+    mode: 'markers'
+  }];
+  for (var [key, value] of Object.entries(Q_table)) {
+    // state.diffY, state.speedY, state.tubeX, action
+    var key_parts = key.split(',').map(number => parseInt(number));
+    if (key_parts[3] === 0)
+      continue
+    var other = Q_table[key_parts.slice(0, 3).join(',') + ',0'] || 0;
+    console.log(value, other)
+    if (other > value) {
+      data[0].x.push(key_parts[0]);
+      data[0].y.push(key_parts[1]);
+      data[0].z.push(key_parts[2]);
+    } else {
+      data[1].x.push(key_parts[0]);
+      data[1].y.push(key_parts[1]);
+      data[1].z.push(key_parts[2]);
+    }
+  }
+  console.log(data);
+  Plotly.react('plot', data, layout);
+
 }
 
 /**
@@ -240,8 +295,8 @@ function triggerGameOver() {
 function nextStep() {
   // If the game hasn't started yet then do nothing
   if (gameState != GAME)
-   return;
-  
+    return;
+
   // Logic to determine if the Flappy Bird successfully surpassed the tube The
   // changing of the targetTubeIndex denotes the completion of an episode
   if (birdX < tubes[0].x + 3 && (tubes[0].x < tubes[1].x || tubes[1].x + 3 < birdX)) {
@@ -252,7 +307,7 @@ function nextStep() {
       rewardTheBird(5, true);
     }
     targetTubeIndex = 0;
-  } else  {
+  } else {
     targetTube = tubes[1];
     if (targetTubeIndex == 0) {
       // The target tube changed from index [0] to [1], which means the tube[0]
@@ -261,7 +316,7 @@ function nextStep() {
     }
     targetTubeIndex = 1;
   }
-  
+
   // We'll take no action if the  tube is too far from the bird
   if (targetTube.x - birdX > 28) {
     return;
@@ -272,9 +327,9 @@ function nextStep() {
   var state = {
     speedY: Math.round(birdYSpeed * 100),
     tubeX: targetTube.x,
-    diffY: (targetTube.y+17+6) - (birdY+1)
+    diffY: (targetTube.y + 17 + 6) - (birdY + 1)
   };
-  
+
   // Query the Q-table to determine the appropriate action to be taken for the
   // current state
   var actionToBeTaken = getAction(state);
@@ -284,7 +339,7 @@ function nextStep() {
   var config = {
     env: state,
     action: actionToBeTaken
-  };  
+  };
   frameBuffer.push(config);
   episodeFrameCount++;
 
@@ -292,7 +347,7 @@ function nextStep() {
   if (actionToBeTaken == actionSet.JUMP) {
     birdYSpeed = -1.4;
   } else {
-      // For stay action, we do nothing but just let the bird go down due to
-      // gravity
-  }  
+    // For stay action, we do nothing but just let the bird go down due to
+    // gravity
+  }
 }

@@ -99,7 +99,6 @@ function loop(){
             renderHiScore();
             break;
     }
-    
 }
 
 function handleUserInteraction(event){
