@@ -8,7 +8,7 @@
  * Reference: https://codepen.io/sakri/details/gGahJ
  */
 
-var readyStateCheckInterval = setInterval( function() {
+var readyStateCheckInterval = setInterval(function () {
     if (document.readyState === "complete") {
         clearInterval(readyStateCheckInterval);
         initGame();
@@ -17,14 +17,14 @@ var readyStateCheckInterval = setInterval( function() {
 
 var eventLoop;
 
-var bgLoc = {x:0, y:0, width:32, height:32};
-var groundLoc = {x:0, y:31, width:35, height:1};
-var instructionsLoc = {x:6, y:49, width:17, height:21};
-var gameOverLoc = {x:6, y:32, width:21, height:17};
-var birdLocs = [{x:32, y:0, width:5, height:3}, {x:32, y:3, width:5, height:3}, {x:32, y:6, width:5, height:3}];
-var tubeLoc = {x:0, y:32, width:6, height:44};
+var bgLoc = { x: 0, y: 0, width: 32, height: 32 };
+var groundLoc = { x: 0, y: 31, width: 35, height: 1 };
+var instructionsLoc = { x: 6, y: 49, width: 17, height: 21 };
+var gameOverLoc = { x: 6, y: 32, width: 21, height: 17 };
+var birdLocs = [{ x: 32, y: 0, width: 5, height: 3 }, { x: 32, y: 3, width: 5, height: 3 }, { x: 32, y: 6, width: 5, height: 3 }];
+var tubeLoc = { x: 0, y: 32, width: 6, height: 44 };
 
-var hiscoreLoc = {x:6, y:70, width:30, height:10};
+var hiscoreLoc = { x: 6, y: 70, width: 30, height: 10 };
 var scoreLocs = [32, 9, 27, 32, 32, 32, 27, 41, 32, 41, 27, 50, 32, 50, 27, 59, 32, 59, 32, 18];
 
 var flappyBirdSource = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACUAAABQCAYAAACecbxxAAACY0lEQVRoge2XPW4CMRCF5yooLeegpIw4SZp0dBF34DBIKSMOkKQJUgpyBuQUyYIZv/mx1wsGraXR4vXu+Jv3Zheg59e3cM3YbqbH+Dl8BiIiujYUEVEHtZvPwm4+C01AERF9LB+On5uAas6+uKdG+27Oviafvu1mGlq0L40WoOLRFFR8HKFGqLuFau7pa/I91SRUk/aJjb4/vB+D3xivea/xrkMotOElA9r38r0K14y4wVuC6sYI5YY6RkNQpzFC3TTU02Ya1vtF+AqrcMnP6/0iWUvAuoXH5QQ/EXZY16N16R4din8FoHmcULqO50Pnzs5bUNKmfBMNNlaFQ8HzfaG0Y7Q5ylkOhRTwHNnmIlSxfaVHL1SsWBEUUo5bADdKbZKvrWEfggIWovNZ9qH3x6VChvKoxNclJapCeY5oc+2zBO2ybwgobb0alKTCVaHQRpaCWjHZUJYtsGKhmVX1HpeTwKH+wUwr+LoEZdhHyXUaVIVIlIJWpfDqKAXJyYfW9CTIIm1eqUg7Ceopo4/cRRYUdkpUE4qYMuDcnUD16amL2uesEqqTqfZ5IiOycvWFou6GHraJeXrkqlZdTdX/Et4tlMs+5QvZhCrpKV6UWOCA/2ZUxYqg0BPHq+XrTvVs1a1fnkhyVGFGn/VTqkkodPMQUFXti5PB5AKUES6oM+UcCuW8JvBwvBI81dWByYBCm+ZA5heU+w85Xtd6SpubfdgHKq5SmqOeM/uwApQ6d0KdjwGUKoHyK8X955ta6/yI7onniWJsmEoZVoj3I8USpQaAUmEGhbKsQHMElWWfEtZ6n6BfqpBLl8a8BXQAAAAASUVORK5CYII=";
@@ -43,14 +43,14 @@ var renderContext = renderCanvas.getContext("2d");
 renderContext.globalCompositeOperation = "destination-over";
 var collisionCanvas = document.createElement("canvas");
 
-function drawSpriteSheetImage(context, locRect, x, y){
+function drawSpriteSheetImage(context, locRect, x, y) {
     context.drawImage(spriteSheetImage, locRect.x, locRect.y, locRect.width, locRect.height, x, y, locRect.width, locRect.height);
- }
+}
 
-var canvas, context, gameState, score, groundX = 0, birdY, birdYSpeed, birdX = 5, birdFrame = 0, activeTube, tubes = [], collisionContext, scale, scoreLoc = {width:5, height:9}, hiScore = 0;
+var canvas, context, gameState, score, groundX = 0, birdY, birdYSpeed, birdX = 5, birdFrame = 0, activeTube, tubes = [], collisionContext, scale, scoreLoc = { width: 5, height: 9 }, hiScore = 0;
 var HOME = 0, GAME = 1, GAME_OVER = 2, HI_SCORE = 3;
 
-function initGame(){
+function initGame() {
     canvas = document.getElementById("gameCanvas");
     context = canvas.getContext("2d");
     scale = 12;
@@ -58,7 +58,6 @@ function initGame(){
     canvas.height = scale * 32;
     canvas.style.left = window.innerWidth / 2 - (scale * 32) / 2 + "px";
     canvas.style.top = window.innerHeight / 2 - (scale * 32) / 2 + "px";
-    window.addEventListener( "keydown", handleUserInteraction, false );
     canvas.addEventListener('touchstart', handleUserInteraction, false);
     canvas.addEventListener('mousedown', handleUserInteraction, false);
     collisionCanvas.width = birdX + 8;
@@ -70,54 +69,54 @@ function initGame(){
     eventLoop = setInterval(loop, 40);
 }
 
-function startGame(){
+function startGame() {
     gameState = HOME;
     birdYSpeed = score = 0;
     birdY = 14;
-    for(var i = 0; i < 2; i++){
-        tubes[i] = {x : Math.round(48 + i * 19) };
+    for (var i = 0; i < 2; i++) {
+        tubes[i] = { x: Math.round(48 + i * 19) };
         setTubeY(tubes[i]);
     }
 }
 
-function loop(){
-    switch(gameState){
-        case HOME: 
+function loop() {
+    switch (gameState) {
+        case HOME:
             renderHome();
             break;
-        case GAME : 
+        case GAME:
             nextStep();
             renderGame();
             break;
-        case GAME_OVER: 
+        case GAME_OVER:
             renderGameOver();
             // We'll keep looping over the game to train our flappy bird
             startGame();
             gameState = GAME
             break;
-        case HI_SCORE : 
+        case HI_SCORE:
             renderHiScore();
             break;
     }
-    
+
 }
 
-function handleUserInteraction(event){
-    switch(gameState){
+function handleUserInteraction(event) {
+    switch (gameState) {
         case HOME: gameState = GAME;
             break;
-        case GAME : birdYSpeed = -1.4;
+        case GAME: birdYSpeed = -1.4;
             break;
         case HI_SCORE: startGame();
             break;
     }
-    if(event){
+    if (event) {
         event.preventDefault();
     }
 }
 
-function renderHome(){
-    renderContext.clearRect(0,0,32,32);
+function renderHome() {
+    renderContext.clearRect(0, 0, 32, 32);
     drawSpriteSheetImage(renderContext, instructionsLoc, 32 - instructionsLoc.width - 1, 1);
     updateBirdHome();
     renderGround(true);
@@ -125,9 +124,9 @@ function renderHome(){
     renderToScale();
 }
 
-function renderGame(){
-    renderContext.clearRect(0,0,32,32);
-    collisionContext.clearRect(0,0,collisionCanvas.width, collisionCanvas.height);
+function renderGame() {
+    renderContext.clearRect(0, 0, 32, 32);
+    collisionContext.clearRect(0, 0, collisionCanvas.width, collisionCanvas.height);
     renderScore(score, renderScoreXGame, 1);
     renderGround(true);
     renderTubes();
@@ -135,23 +134,23 @@ function renderGame(){
     checkCollision();
     if (displayTarget) {
         renderContext.fillStyle = "#F00";
-        renderContext.fillRect(targetTube.x + 3, (targetTube.y+17+6), 1, 1);
+        renderContext.fillRect(targetTube.x + 3, (targetTube.y + 17 + 6), 1, 1);
     }
     drawSpriteSheetImage(renderContext, bgLoc, 0, 0);
     renderToScale();
 }
 
-function renderGameOver(){
+function renderGameOver() {
     renderContext.clearRect(0, 0, 32, 32);
     drawSpriteSheetImage(renderContext, gameOverLoc, 5, 7 - birdFrame);
     renderToScale();
-    if(++score % 8 == 0){
+    if (++score % 8 == 0) {
         birdFrame++;
         birdFrame %= 2;
     }
 }
 
-function renderHiScore(){
+function renderHiScore() {
     renderContext.clearRect(0, 0, 32, 32);
     drawSpriteSheetImage(renderContext, hiscoreLoc, 1, 5);
     renderScore(hiScore, renderScoreXHiScore, 16);
@@ -159,24 +158,29 @@ function renderHiScore(){
     renderToScale();
 }
 
-function renderToScale(){
-    var i, data = renderContext.getImageData(0,0,32, 32).data;
-    for(i=0; i<data.length; i+=4){
-        context.fillStyle = "rgb("+data[i]+","+data[i+1]+","+data[i+2]+")";
-        context.fillRect(((i/4) % 32) * scale, Math.floor(i / 128) * scale, scale, scale);
+function renderToScale() {
+    var i, data = renderContext.getImageData(0, 0, 32, 32).data;
+    for (i = 0; i < data.length; i += 4) {
+        context.fillStyle = "rgb(" + data[i] + "," + data[i + 1] + "," + data[i + 2] + ")";
+        context.fillRect(((i / 4) % 32) * scale, Math.floor(i / 128) * scale, scale, scale);
     }
+
+    context.beginPath();
+    context.moveTo((birdX + 2) * scale, (birdY + 2) * scale);
+    context.lineTo((birdX + 2) * scale + 50, (birdY + 2) * scale + birdYSpeed * 30);
+    context.stroke();
 }
 
-function checkCollision(){
-    if(birdX == tubes[activeTube].x + 6){
+function checkCollision() {
+    if (birdX == tubes[activeTube].x + 6) {
         score++;
     }
     var collisionData = collisionContext.getImageData(birdX, birdY, 5, 3).data;
     var data = renderContext.getImageData(birdX, birdY, 5, 3).data;
-    for(var i = 0; i< collisionData.length; i+=4){
-        if(collisionData[i+3] != data[i+3]){
+    for (var i = 0; i < collisionData.length; i += 4) {
+        if (collisionData[i + 3] != data[i + 3]) {
             gameState = GAME_OVER;
-            if(score > hiScore){
+            if (score > hiScore) {
                 hiScore = score + 0;
             }
             triggerGameOver();
@@ -185,11 +189,11 @@ function checkCollision(){
     }
 }
 
-function renderScore(score, xFunction, y){
+function renderScore(score, xFunction, y) {
     var parts = score.toString().split("");
     var i, index, length = parts.length;
-    for(var i=0; i<length; i++){
-        index = parseInt(parts.pop())*2;
+    for (var i = 0; i < length; i++) {
+        index = parseInt(parts.pop()) * 2;
         scoreLoc.x = scoreLocs[index];
         scoreLoc.y = scoreLocs[index + 1];
         drawSpriteSheetImage(renderContext, scoreLoc, xFunction(i, length), y);
@@ -200,38 +204,46 @@ function renderScore(score, xFunction, y){
     document.getElementById("trials").innerText = trials;
 }
 
-function renderScoreXGame(index, total){
+function renderScoreXGame(index, total) {
     return 25 - 5 * index;
 }
 
-function renderScoreXHiScore(index, total){
-    return 12 + Math.floor((total/2)*5) - 5 * index;
+function renderScoreXHiScore(index, total) {
+    return 12 + Math.floor((total / 2) * 5) - 5 * index;
 }
 
-function renderGround(move){
-    if(move && --groundX < bgLoc.width - groundLoc.width){
-        groundX = 0;
+function renderGround(move) {
+    if (!isManualMode()) {
+        if (move && --groundX < bgLoc.width - groundLoc.width) {
+            groundX = 0;
+        }
     }
     drawSpriteSheetImage(renderContext, groundLoc, groundX, 31);
 }
 
-function updateBirdHome(){
+function updateBirdHome() {
     drawSpriteSheetImage(renderContext, birdLocs[birdFrame], birdX, birdY);
     birdFrame++;
     birdFrame %= 3;
 }
 
-function updateBirdGame(){
-    birdY = Math.round(birdY + birdYSpeed);
-    // Gravity for the environment
-    birdYSpeed += .25;
-    if(birdY < 0){
-        birdY = 0;
-        birdYSpeed = 0;
-    }
-    if(birdY + 5 > bgLoc.height){
-        birdY = 28;
-        birdYSpeed = 0;
+function isManualMode() {
+    return document.querySelector('input[name="gameplayMode"]:checked').value == "manual";
+}
+
+function updateBirdGame() {
+    if (!isManualMode()) {
+        birdY = Math.round(birdY + birdYSpeed);
+        // Gravity for the environment
+        birdYSpeed += .25;
+        if (birdY < 0) {
+            birdY = 0;
+            birdYSpeed = 0;
+        }
+        if (birdY + 5 > bgLoc.height) {
+            birdY = 28;
+            birdYSpeed = 0;
+        }
     }
     renderContext.save();
     collisionContext.save();
@@ -245,25 +257,76 @@ function updateBirdGame(){
     birdFrame %= 3;
 }
 
-function renderTubes(){
+function renderTubes() {
     var i, tube;
     activeTube = tubes[0].x < tubes[1].x ? 0 : 1;
-    for(i= 0; i < 2;i++){
+    var manual = isManualMode();
+    for (i = 0; i < 2; i++) {
         tube = tubes[i];
-        if(--tube.x <= -6 ){
-            tube.x = 32;
-            setTubeY(tube);
+        if (!isManualMode()) {
+            if (--tube.x <= -6) {
+                tube.x = 32;
+                setTubeY(tube);
+            }
         }
-        drawSpriteSheetImage(renderContext, tubeLoc, tube.x, tube.y );
-        drawSpriteSheetImage(collisionContext, tubeLoc, tube.x, tube.y );
+        drawSpriteSheetImage(renderContext, tubeLoc, tube.x, tube.y);
+        drawSpriteSheetImage(collisionContext, tubeLoc, tube.x, tube.y);
     }
 }
 
-function setTubeY(tube){
+function setTubeY(tube) {
     // Sets the y-coordinate for tubes depending upon if the given environment should be deterministic or stochastic
     if (isEnvironmentStatic) {
         tube.y = Math.floor(0.639 * (bgLoc.height - tubeLoc.height));
     } else {
         tube.y = Math.floor(Math.random() * (bgLoc.height - tubeLoc.height + 2));
     }
+}
+
+function updateState() {
+    document.querySelector('[name=gameplayMode][value=manual]').checked = true;
+    birdY = parseFloat(document.getElementById('birdY').value);
+    birdYSpeed = parseFloat(document.getElementById('birdYSpeed').value);
+    var targetTubeX = parseFloat(document.getElementById('tubeX').value);
+    for (i = 0; i < 2; i++) {
+        tube = tubes[i];
+        tube.x = Math.round(targetTubeX + i * 19);
+    }
+
+    var state = {
+        speedY: Math.round(birdYSpeed * 100),
+        tubeX: targetTube.x,
+        diffY: (targetTube.y + 17 + 6) - (birdY + 1)
+    };
+    var best = Infinity;
+    var closest_state = null;
+    for (var key of Object.keys(Q_table)) {
+        var parts = key.split(',').map(parseFloat);
+        var Q_table_state = {
+            diffY: parts[0],
+            speedY: parts[1],
+            tubeX: parts[2],
+        }
+        //calculate distance between state and Q_table_state
+        var distance = Math.sqrt(Math.pow(state.diffY - Q_table_state.diffY, 2) + Math.pow(state.speedY - Q_table_state.speedY, 2) + Math.pow(state.tubeX - Q_table_state.tubeX, 2));
+        if (distance < best) {
+            best = distance;
+            closest_state = Q_table_state;
+        }
+    }
+    document.getElementById('action').innerText = '?';
+    if (closest_state) {
+        var rewardForStay = getQ(closest_state, actionSet.STAY);
+        var rewardForJump = getQ(closest_state, actionSet.JUMP);
+        if (rewardForJump > rewardForStay) {
+            document.getElementById('action').innerText = 'JUMP';
+        } else {
+            document.getElementById('action').innerText = 'STAY';
+        }
+    }
+}
+
+function updateSliderVisibility() {
+    var manual = isManualMode();
+    document.getElementById('sliders').style.display = manual ? 'block' : 'none';
 }
