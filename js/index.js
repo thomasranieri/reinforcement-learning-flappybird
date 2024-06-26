@@ -136,6 +136,35 @@ function renderGame() {
         renderContext.fillStyle = "#F00";
         renderContext.fillRect(targetTube.x + 3, (targetTube.y + 17 + 6), 1, 1);
     }
+    if (isManualMode()) {
+        var state = {
+            speedY: Math.round(birdYSpeed * 100),
+            tubeX: targetTube.x,
+            diffY: (targetTube.y + 17 + 6) - (birdY + 1)
+        };
+        for (var x = 0; x < 32; x++) {
+            for (var y = 0; y < 32; y++) {
+
+                document.getElementById('action').innerText = '?';
+                // state.tubeX = targetTube.x + x;
+                // state.diffY = y;
+                var closest_state = getClosestState(state);
+                if (!closest_state) {
+                    renderContext.fillStyle = "#000";
+                } else {
+                    var rewardForStay = getQ(closest_state, actionSet.STAY);
+                    var rewardForJump = getQ(closest_state, actionSet.JUMP);
+                    if (rewardForJump > rewardForStay) {
+                        renderContext.fillStyle = "#F00";
+                    } else {
+                        renderContext.fillStyle = "#0F0";
+                    }
+                }
+                // console.log(x, y)
+                renderContext.fillRect(x, y, 1, 1);
+            }
+        }
+    }
     drawSpriteSheetImage(renderContext, bgLoc, 0, 0);
     renderToScale();
 }
@@ -283,21 +312,7 @@ function setTubeY(tube) {
     }
 }
 
-function updateState() {
-    document.querySelector('[name=gameplayMode][value=manual]').checked = true;
-    birdY = parseFloat(document.getElementById('birdY').value);
-    birdYSpeed = parseFloat(document.getElementById('birdYSpeed').value);
-    var targetTubeX = parseFloat(document.getElementById('tubeX').value);
-    for (i = 0; i < 2; i++) {
-        tube = tubes[i];
-        tube.x = Math.round(targetTubeX + i * 19);
-    }
-
-    var state = {
-        speedY: Math.round(birdYSpeed * 100),
-        tubeX: targetTube.x,
-        diffY: (targetTube.y + 17 + 6) - (birdY + 1)
-    };
+function getClosestState(state) {
     var best = Infinity;
     var closest_state = null;
     for (var key of Object.keys(Q_table)) {
@@ -314,7 +329,26 @@ function updateState() {
             closest_state = Q_table_state;
         }
     }
+    return closest_state;
+}
+
+function updateState() {
+    document.querySelector('[name=gameplayMode][value=manual]').checked = true;
+    birdY = parseFloat(document.getElementById('birdY').value);
+    birdYSpeed = parseFloat(document.getElementById('birdYSpeed').value);
+    var targetTubeX = parseFloat(document.getElementById('tubeX').value);
+    for (i = 0; i < 2; i++) {
+        tube = tubes[i];
+        tube.x = Math.round(targetTubeX + i * 19);
+    }
+
+    var state = {
+        speedY: Math.round(birdYSpeed * 100),
+        tubeX: targetTube.x,
+        diffY: (targetTube.y + 17 + 6) - (birdY + 1)
+    };
     document.getElementById('action').innerText = '?';
+    var closest_state = getClosestState(state);
     if (closest_state) {
         var rewardForStay = getQ(closest_state, actionSet.STAY);
         var rewardForJump = getQ(closest_state, actionSet.JUMP);
