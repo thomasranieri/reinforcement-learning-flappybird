@@ -59,9 +59,13 @@ input[type=button]:active { transform:translateY(1px); }
 .mode-switch legend { padding:0 6px; font-size:1.1rem; text-transform:uppercase; color:var(--text-muted); }
 .radios { display:flex; gap:var(--gap-sm); }
 .sliders { flex-direction:column; gap:var(--gap-sm); background:var(--panel-alt); padding:var(--gap-sm); border-radius:8px; }
-.sliders label { display:flex; flex-direction:column; font-size:1.1rem; gap:4px; }
-.sliders label > button.info-btn { align-self:flex-start; margin-left:4px; background:#323741; color:#eee; border:1px solid #444; width:20px; height:20px; border-radius:50%; font-size:1.1rem; line-height:1; padding:0; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; font-weight:600; }
-.sliders label > button.info-btn[aria-pressed="true"] { background:var(--accent); color:#111; }
+.sliders label { display:grid; grid-template-columns:90px auto 1fr; align-items:center; font-size:1.1rem; column-gap:8px; }
+.sliders label > button.info-btn { align-self:center; margin-left:0; background:#323741; color:#eee; border:1px solid #444; border-radius:999px; font-size:1.0rem; line-height:1.2; padding:2px 10px 3px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; font-weight:600; white-space:nowrap; max-width:100%; }
+.sliders label input[type=range] { width:100%; min-width:0; }
+.sliders label > button.info-btn:hover { background:#3d434f; }
+.sliders label > button.info-btn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+.sliders label > button.info-btn[aria-pressed="true"] { background:var(--accent); color:#111; border-color:var(--accent); }
+.sliders label > button.info-btn[aria-pressed="true"]:hover { background:var(--accent-glow); border-color:var(--accent-glow); }
 .action-indicator { font-size:1.4rem; font-weight:600; }
 
 /* Episode history table */
