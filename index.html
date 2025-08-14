@@ -101,9 +101,9 @@
             <label><input type="radio" name="gameplayMode" value="manual" onchange="updateSliderVisibility()"> Manual state</label>
           </fieldset>
           <div id="sliders" class="sliders">
-            <label>birdY <input type="range" id="birdY" oninput="updateState()" min="0" max="30"></label>
-            <label>birdYSpeed <input type="range" id="birdYSpeed" oninput="updateState()" min="-1" max="1.6" step="0.1"></label>
-            <label>tubeX <input type="range" id="tubeX" oninput="updateState()" min="0" max="40" step="0.1"></label>
+            <label>birdY <button type="button" class="info-btn" data-annot="birdY" aria-label="Explain birdY" aria-pressed="false">i</button> <input type="range" id="birdY" oninput="updateState()" min="0" max="30"></label>
+            <label>birdYSpeed <button type="button" class="info-btn" data-annot="birdYSpeed" aria-label="Explain birdYSpeed" aria-pressed="false">i</button> <input type="range" id="birdYSpeed" oninput="updateState()" min="-1" max="1.6" step="0.1"></label>
+            <label>tubeX <button type="button" class="info-btn" data-annot="tubeX" aria-label="Explain tubeX" aria-pressed="false">i</button> <input type="range" id="tubeX" oninput="updateState()" min="0" max="40" step="0.1"></label>
           </div>
           <div class="action-indicator">Action: <span id="action"></span></div>
         </form>

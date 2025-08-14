@@ -52,6 +52,10 @@ var canvas, context, gameState, score, groundX = 0, birdY, birdYSpeed, birdX = 5
 var stepsPerFrame = 1;
 var paused = false; // tracks pause state
 var HOME = 0, GAME = 1, GAME_OVER = 2, HI_SCORE = 3;
+// Annotation state
+var activeAnnotation = null; // one of 'birdY','birdYSpeed','tubeX'
+var annotationFade = 0; // for simple fade effect
+var annotationHintEl = null;
 
 function initGame() {
     canvas = document.getElementById("gameCanvas");
@@ -70,6 +74,7 @@ function initGame() {
     startGame();
     // Set the speed of the game
     eventLoop = setInterval(loop, 40);
+    setupAnnotationButtons();
 }
 
 function startGame() {
@@ -190,6 +195,7 @@ function renderToScale() {
     context.moveTo((birdX + 2) * scale, (birdY + 2) * scale);
     context.lineTo((birdX + 2) * scale + 50, (birdY + 2) * scale + birdYSpeed * 30);
     context.stroke();
+    drawAnnotation();
 }
 
 function checkCollision() {
@@ -386,4 +392,173 @@ function updateState() {
 function updateSliderVisibility() {
     var manual = isManualMode();
     document.getElementById('sliders').style.display = manual ? 'block' : 'none';
+}
+
+// ---------------------- Annotation UI ----------------------
+function setupAnnotationButtons() {
+    var buttons = document.querySelectorAll('.info-btn');
+    buttons.forEach(function(btn){
+        btn.addEventListener('click', function(){
+            var key = btn.getAttribute('data-annot');
+            if(activeAnnotation === key) {
+                activeAnnotation = null;
+                btn.setAttribute('aria-pressed','false');
+                removeAnnotationHint();
+            } else {
+                activeAnnotation = key;
+                buttons.forEach(function(b){ b.setAttribute('aria-pressed', b===btn ? 'true' : 'false'); });
+                annotationFade = 1;
+                showAnnotationHint();
+            }
+        });
+    });
+}
+
+function showAnnotationHint(){
+    removeAnnotationHint();
+    annotationHintEl = document.createElement('div');
+    annotationHintEl.className = 'annotation-hint';
+    updateAnnotationHintText();
+    // place inside stage-wrap to position relative to canvas
+    var host = document.querySelector('.stage-wrap');
+    if(host){ host.appendChild(annotationHintEl); }
+    positionAnnotationHint();
+}
+
+function updateAnnotationHintText(){
+    if(!annotationHintEl) return;
+    var txt = '';
+    if(activeAnnotation === 'birdY') {
+        txt = 'birdY: vertical top of bird (current '+birdY.toFixed(1)+')';
+    } else if(activeAnnotation === 'birdYSpeed') {
+        txt = 'birdYSpeed: vertical velocity (current '+birdYSpeed.toFixed(2)+')';
+    } else if(activeAnnotation === 'tubeX') {
+        // active tube (next) distance
+        if(typeof targetTube !== 'undefined') {
+            txt = 'tubeX: X of next tube (current '+targetTube.x+')';
+        } else {
+            txt = 'tubeX: X of next tube';
+        }
+    }
+    annotationHintEl.textContent = txt;
+}
+
+function positionAnnotationHint(){
+    if(!annotationHintEl) return;
+    var rect = canvas.getBoundingClientRect();
+    annotationHintEl.style.left = (rect.left + rect.width/2) + 'px';
+    annotationHintEl.style.top = (rect.top + 8) + 'px';
+}
+
+window.addEventListener('resize', positionAnnotationHint);
+
+function removeAnnotationHint(){
+    if(annotationHintEl && annotationHintEl.parentNode){ annotationHintEl.parentNode.removeChild(annotationHintEl); }
+    annotationHintEl = null;
+}
+
+function drawAnnotation(){
+    if(!activeAnnotation) return;
+    updateAnnotationHintText();
+    positionAnnotationHint();
+    context.save();
+    context.lineWidth = 2;
+    context.font = '14px monospace';
+    context.shadowColor = 'rgba(0,0,0,0.9)';
+    context.shadowBlur = 6;
+    context.shadowOffsetX = 0;
+    context.shadowOffsetY = 0;
+    var baseX = birdX * scale;
+    var baseY = birdY * scale;
+    if(activeAnnotation === 'birdY') {
+        // Draw vertical measurement from top (0) to birdY
+        context.strokeStyle = '#ffe600';
+        context.setLineDash([5,4]);
+        context.beginPath();
+        context.moveTo(baseX - 6, 0);
+        context.lineTo(baseX - 6, baseY);
+        context.stroke();
+        context.setLineDash([]);
+        // arrow heads
+        drawArrowHead(baseX - 6, 0, -Math.PI/2, '#ffe600');
+        drawArrowHead(baseX - 6, baseY, Math.PI/2, '#ffe600');
+        context.fillStyle = '#111';
+        drawLabelPill('birdY='+birdY.toFixed(1), baseX - 70, baseY/2 - 10, '#ffe600');
+    } else if(activeAnnotation === 'birdYSpeed') {
+        // Draw velocity vector from bird center
+        var cx = (birdX+2.5)*scale;
+        var cy = (birdY+1.5)*scale;
+        var vy = birdYSpeed * 25; // scale vector
+        context.strokeStyle = '#ff3d6c';
+        context.beginPath();
+        context.moveTo(cx, cy);
+        context.lineTo(cx, cy + vy);
+        context.stroke();
+        drawArrowHead(cx, cy + vy, vy>=0 ? Math.PI/2 : -Math.PI/2, '#ff3161');
+        drawLabelPill('speed='+birdYSpeed.toFixed(2), cx + 8, cy + vy/2 - 10, '#ff3d6c');
+    } else if(activeAnnotation === 'tubeX') {
+        if(typeof targetTube !== 'undefined') {
+            // Horizontal distance from birdX to tube.x
+            var tx = targetTube.x * scale;
+            var bx = birdX * scale + 5*scale; // right edge of bird
+            var y = 4 * scale;
+            context.strokeStyle = '#29ffc6';
+            context.setLineDash([6,5]);
+            context.beginPath();
+            context.moveTo(bx, y);
+            context.lineTo(tx, y);
+            context.stroke();
+            context.setLineDash([]);
+            drawArrowHead(bx, y, Math.PI, '#2dd6a7');
+            drawArrowHead(tx, y, 0, '#2dd6a7');
+            drawLabelPill('tubeX='+targetTube.x, bx + (tx-bx)/2 - 30, y - 24, '#29ffc6');
+        }
+    }
+    context.restore();
+}
+
+function drawArrowHead(x,y,angle,color){
+    context.save();
+    context.translate(x,y);
+    context.rotate(angle);
+    context.fillStyle = color || '#00c8c8';
+    context.beginPath();
+    context.moveTo(0,0);
+    context.lineTo(-5,-5);
+    context.lineTo(5,-5);
+    context.closePath();
+    context.fill();
+    context.restore();
+}
+
+function drawLabelPill(text, x, y, accent){
+    context.save();
+    context.font = '12px monospace';
+    var paddingX = 6, paddingY = 4;
+    var metrics = context.measureText(text);
+    var w = metrics.width + paddingX*2;
+    var h = 18;
+    context.shadowColor = 'rgba(0,0,0,0.85)';
+    context.shadowBlur = 6;
+    context.fillStyle = 'rgba(15,18,22,0.92)';
+    context.strokeStyle = accent || '#00e0ff';
+    context.lineWidth = 2;
+    var r = 9;
+    context.beginPath();
+    context.moveTo(x + r, y);
+    context.lineTo(x + w - r, y);
+    context.quadraticCurveTo(x + w, y, x + w, y + r);
+    context.lineTo(x + w, y + h - r);
+    context.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    context.lineTo(x + r, y + h);
+    context.quadraticCurveTo(x, y + h, x, y + h - r);
+    context.lineTo(x, y + r);
+    context.quadraticCurveTo(x, y, x + r, y);
+    context.closePath();
+    context.fill();
+    context.stroke();
+    context.fillStyle = accent || '#00e0ff';
+    context.shadowBlur = 0;
+    context.fillText(text, x + paddingX, y + h/2 + 4);
+    context.restore();
 }
