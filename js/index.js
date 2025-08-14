@@ -391,7 +391,6 @@ function updateState() {
 
 function updateSliderVisibility() {
     var manual = isManualMode();
-    document.getElementById('sliders').style.display = manual ? 'block' : 'none';
 }
 
 // ---------------------- Annotation UI ----------------------
@@ -495,7 +494,7 @@ function drawAnnotation(){
         context.lineTo(cx, cy + vy);
         context.stroke();
         drawArrowHead(cx, cy + vy, vy>=0 ? Math.PI/2 : -Math.PI/2, '#ff3161');
-        drawLabelPill('speed='+birdYSpeed.toFixed(2), cx + 8, cy + vy/2 - 10, '#ff3d6c');
+        drawLabelPill('birdYSpeed='+birdYSpeed.toFixed(2), cx + 8, cy + vy/2 - 10, '#ff3d6c');
     } else if(activeAnnotation === 'tubeX') {
         if(typeof targetTube !== 'undefined') {
             // Horizontal distance from birdX to tube.x

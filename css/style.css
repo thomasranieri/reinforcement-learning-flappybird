@@ -58,14 +58,12 @@ input[type=button]:active { transform:translateY(1px); }
 .mode-switch { border:1px solid var(--border); padding:var(--gap-sm) var(--gap); border-radius:8px; display:flex; flex-direction:column; gap:var(--gap-xs); background:var(--panel-alt); }
 .mode-switch legend { padding:0 6px; font-size:1.1rem; text-transform:uppercase; color:var(--text-muted); }
 .radios { display:flex; gap:var(--gap-sm); }
-.sliders { display:none; flex-direction:column; gap:var(--gap-sm); background:var(--panel-alt); padding:var(--gap-sm); border-radius:8px; }
+.sliders { flex-direction:column; gap:var(--gap-sm); background:var(--panel-alt); padding:var(--gap-sm); border-radius:8px; }
 .sliders label { display:flex; flex-direction:column; font-size:1.1rem; gap:4px; }
 .sliders label > button.info-btn { align-self:flex-start; margin-left:4px; background:#323741; color:#eee; border:1px solid #444; width:20px; height:20px; border-radius:50%; font-size:1.1rem; line-height:1; padding:0; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; font-weight:600; }
 .sliders label > button.info-btn[aria-pressed="true"] { background:var(--accent); color:#111; }
 .annotation-hint { position:absolute; pointer-events:none; font-size:12px; background:linear-gradient(135deg,#101214,#1f242b); padding:6px 8px; border-radius:6px; color:#f8f9fa; transform:translate(-50%, -6px); white-space:nowrap; border:1px solid #00e0ff; box-shadow:0 0 0 2px rgba(0,224,255,.25), 0 4px 10px -2px rgba(0,0,0,.8); font-weight:600; letter-spacing:.5px; }
 .action-indicator { font-size:1.4rem; font-weight:600; }
-
-#sliders { display:none; }
 
 /* Episode history table */
 .episode-table-wrap { max-height:220px; overflow:auto; border:1px solid var(--border); border-radius:8px; padding:var(--gap-sm); background:var(--panel-alt); }
