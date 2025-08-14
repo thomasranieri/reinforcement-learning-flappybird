@@ -39,6 +39,22 @@
             <div class="stat"><span class="stat-label">Rules</span><span id="rules" class="stat-value">0</span></div>
             <div class="stat"><span class="stat-label">Trials</span><span id="trials" class="stat-value">0</span></div>
           </div>
+          <div class="policy-map-wrap" aria-live="polite">
+            <h3>Policy Map</h3>
+            <div class="policy-map-canvas-holder">
+              <canvas id="policyMap" width="260" height="200" aria-label="Policy visualization: diffY vs speedY"></canvas>
+              <div class="policy-map-empty" id="policyMapEmpty">Learning… (insufficient data)</div>
+            </div>
+            <div class="policy-map-legend">
+              <span class="legend-item"><span class="legend-symbol jump"></span> Jump</span>
+              <span class="legend-item"><span class="legend-symbol stay"></span> Stay</span>
+              <span class="legend-item gap">Size = |Qdiff|</span>
+            </div>
+            <div class="policy-map-actions">
+              <button type="button" id="refreshPolicyBtn" onclick="updatePolicyMap(true)">Refresh</button>
+              <button type="button" id="togglePolicyAutoBtn" onclick="togglePolicyAuto()" aria-pressed="true">Auto On</button>
+            </div>
+          </div>
           <div class="episode-table-wrap">
             <h3>Episode Scores</h3>
             <div class="episode-table-actions">
@@ -97,6 +113,7 @@
   <script src="js/index.js"></script>
   <script src="js/brain.js"></script>
   <script src="js/config.js"></script>
+  <script src="js/policy_viz.js"></script>
 </body>
 
 </html>

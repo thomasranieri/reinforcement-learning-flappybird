@@ -9,7 +9,19 @@ var displayTarget = false;
 
 function gameSpeedChange(curSpeed) {
     clearInterval(eventLoop);
-    eventLoop = setInterval(loop, 100-curSpeed);
+    // Map slider (0-100) to interval and steps per frame
+    // Keep a minimum interval to avoid blocking UI, increase stepsPerFrame for training throughput
+    var speed = parseInt(curSpeed,10);
+    var minInterval = 16; // ~60fps
+    var baseInterval = 100 - speed; // original behavior
+    var interval = Math.max(minInterval, baseInterval);
+    // Steps per frame grows when speed near max
+    // At speed 40 (default), stepsPerFrame ~1
+    // At speed 100 (max slider value) stepsPerFrame ~ (1 +  (speed-40)/4 ) => ~16 (capped)
+    var extra = Math.max(0, speed - 40);
+    stepsPerFrame = 1 + Math.floor(extra / 4);
+    if (stepsPerFrame > 20) stepsPerFrame = 20; // safety cap
+    eventLoop = setInterval(loop, interval);
 }
 
 function toggleDisplayTarget(showTarget) {

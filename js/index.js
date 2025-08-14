@@ -48,6 +48,8 @@ function drawSpriteSheetImage(context, locRect, x, y) {
 }
 
 var canvas, context, gameState, score, groundX = 0, birdY, birdYSpeed, birdX = 5, birdFrame = 0, activeTube, tubes = [], collisionContext, scale, scoreLoc = { width: 5, height: 9 }, hiScore = 0;
+// Number of environment steps to process per visual frame (increases at higher speeds for faster training)
+var stepsPerFrame = 1;
 var paused = false; // tracks pause state
 var HOME = 0, GAME = 1, GAME_OVER = 2, HI_SCORE = 3;
 
@@ -82,7 +84,6 @@ function startGame() {
 
 function loop() {
     if (paused) {
-        // still render last frame to ensure overlay visibility
         renderToScale();
         return;
     }
@@ -91,20 +92,30 @@ function loop() {
             renderHome();
             break;
         case GAME:
-            nextStep();
-            renderGame();
+            if (stepsPerFrame === 1) {
+                nextStep();
+                renderGame();
+            } else {
+                for (var s = 0; s < stepsPerFrame; s++) {
+                    nextStep();
+                    if (s === stepsPerFrame - 1) {
+                        renderGame();
+                    } else {
+                        // Fast intermediate logic update without expensive scale blit
+                        drawGameContents();
+                    }
+                }
+            }
             break;
         case GAME_OVER:
             renderGameOver();
-            // We'll keep looping over the game to train our flappy bird
             startGame();
-            gameState = GAME
+            gameState = GAME;
             break;
         case HI_SCORE:
             renderHiScore();
             break;
     }
-
 }
 
 function handleUserInteraction(event) {
@@ -130,7 +141,7 @@ function renderHome() {
     renderToScale();
 }
 
-function renderGame() {
+function drawGameContents() {
     renderContext.clearRect(0, 0, 32, 32);
     collisionContext.clearRect(0, 0, collisionCanvas.width, collisionCanvas.height);
     renderScore(score, renderScoreXGame, 1);
@@ -143,6 +154,10 @@ function renderGame() {
         renderContext.fillRect(targetTube.x + 3, (targetTube.y + 17 + 6), 1, 1);
     }
     drawSpriteSheetImage(renderContext, bgLoc, 0, 0);
+}
+
+function renderGame() {
+    drawGameContents();
     renderToScale();
 }
 
@@ -240,6 +255,10 @@ function updateScores(isNewHigh) {
     if (rulesEl) rulesEl.innerText = Object.keys(Q_table).length;
     var trialsEl = document.getElementById('trials');
     if (trialsEl) trialsEl.innerText = trials;
+    // Optionally expose training acceleration via title attribute
+    if (currentScoreEl) {
+        currentScoreEl.title = 'Steps/frame: ' + stepsPerFrame;
+    }
 }
 
 function togglePause() {
