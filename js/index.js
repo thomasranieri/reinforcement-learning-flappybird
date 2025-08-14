@@ -52,10 +52,8 @@ var canvas, context, gameState, score, groundX = 0, birdY, birdYSpeed, birdX = 5
 var stepsPerFrame = 1;
 var paused = false; // tracks pause state
 var HOME = 0, GAME = 1, GAME_OVER = 2, HI_SCORE = 3;
-// Annotation state
+// Annotation state (no popup hint anymore)
 var activeAnnotation = null; // one of 'birdY','birdYSpeed','tubeX'
-var annotationFade = 0; // for simple fade effect
-var annotationHintEl = null;
 
 function initGame() {
     canvas = document.getElementById("gameCanvas");
@@ -402,64 +400,16 @@ function setupAnnotationButtons() {
             if(activeAnnotation === key) {
                 activeAnnotation = null;
                 btn.setAttribute('aria-pressed','false');
-                removeAnnotationHint();
             } else {
                 activeAnnotation = key;
                 buttons.forEach(function(b){ b.setAttribute('aria-pressed', b===btn ? 'true' : 'false'); });
-                annotationFade = 1;
-                showAnnotationHint();
             }
         });
     });
 }
 
-function showAnnotationHint(){
-    removeAnnotationHint();
-    annotationHintEl = document.createElement('div');
-    annotationHintEl.className = 'annotation-hint';
-    updateAnnotationHintText();
-    // place inside stage-wrap to position relative to canvas
-    var host = document.querySelector('.stage-wrap');
-    if(host){ host.appendChild(annotationHintEl); }
-    positionAnnotationHint();
-}
-
-function updateAnnotationHintText(){
-    if(!annotationHintEl) return;
-    var txt = '';
-    if(activeAnnotation === 'birdY') {
-        txt = 'birdY: vertical top of bird (current '+birdY.toFixed(1)+')';
-    } else if(activeAnnotation === 'birdYSpeed') {
-        txt = 'birdYSpeed: vertical velocity (current '+birdYSpeed.toFixed(2)+')';
-    } else if(activeAnnotation === 'tubeX') {
-        // active tube (next) distance
-        if(typeof targetTube !== 'undefined') {
-            txt = 'tubeX: X of next tube (current '+targetTube.x+')';
-        } else {
-            txt = 'tubeX: X of next tube';
-        }
-    }
-    annotationHintEl.textContent = txt;
-}
-
-function positionAnnotationHint(){
-    if(!annotationHintEl) return;
-    var rect = canvas.getBoundingClientRect();
-    annotationHintEl.style.left = (rect.left + rect.width/2) + 'px';
-    annotationHintEl.style.top = (rect.top + 8) + 'px';
-}
-
-window.addEventListener('resize', positionAnnotationHint);
-
-function removeAnnotationHint(){
-    if(annotationHintEl && annotationHintEl.parentNode){ annotationHintEl.parentNode.removeChild(annotationHintEl); }
-    annotationHintEl = null;
-}
-
 function drawAnnotation(){
     if(!activeAnnotation) return;
-    updateAnnotationHintText();
-    positionAnnotationHint();
     context.save();
     context.lineWidth = 2;
     context.font = '14px monospace';
@@ -479,22 +429,22 @@ function drawAnnotation(){
         context.stroke();
         context.setLineDash([]);
         // arrow heads
-        drawArrowHead(baseX - 6, 0, -Math.PI/2, '#ffe600');
-        drawArrowHead(baseX - 6, baseY, Math.PI/2, '#ffe600');
+        drawArrowHead(baseX - 6, 0, Math.PI, '#ffe600');
+        drawArrowHead(baseX - 6, baseY, 0, '#ffe600');
         context.fillStyle = '#111';
-        drawLabelPill('birdY='+birdY.toFixed(1), baseX - 70, baseY/2 - 10, '#ffe600');
+        drawLabelPill('birdY='+birdY.toFixed(1), baseX , baseY/2 - 10, '#ffe600');
     } else if(activeAnnotation === 'birdYSpeed') {
         // Draw velocity vector from bird center
         var cx = (birdX+2.5)*scale;
-        var cy = (birdY+1.5)*scale;
+        var cy = (birdY+2)*scale;
         var vy = birdYSpeed * 25; // scale vector
         context.strokeStyle = '#ff3d6c';
         context.beginPath();
-        context.moveTo(cx, cy);
-        context.lineTo(cx, cy + vy);
+        context.moveTo(cx + 40, cy);
+        context.lineTo(cx + 40, cy + vy);
         context.stroke();
-        drawArrowHead(cx, cy + vy, vy>=0 ? Math.PI/2 : -Math.PI/2, '#ff3161');
-        drawLabelPill('birdYSpeed='+birdYSpeed.toFixed(2), cx + 8, cy + vy/2 - 10, '#ff3d6c');
+        drawArrowHead(cx + 40, cy + vy, vy>=0 ? 0 : -Math.PI, '#ff3161');
+        drawLabelPill('birdYSpeed='+birdYSpeed.toFixed(2), cx + 70, cy + vy, '#ff3d6c');
     } else if(activeAnnotation === 'tubeX') {
         if(typeof targetTube !== 'undefined') {
             // Horizontal distance from birdX to tube.x
@@ -504,12 +454,13 @@ function drawAnnotation(){
             context.strokeStyle = '#29ffc6';
             context.setLineDash([6,5]);
             context.beginPath();
-            context.moveTo(bx, y);
+            context.moveTo(0, y);
             context.lineTo(tx, y);
             context.stroke();
+            document.title = targetTube.x;
             context.setLineDash([]);
-            drawArrowHead(bx, y, Math.PI, '#2dd6a7');
-            drawArrowHead(tx, y, 0, '#2dd6a7');
+            drawArrowHead(0, y, Math.PI/2, '#2dd6a7');
+            drawArrowHead(tx, y, -Math.PI/2, '#2dd6a7');
             drawLabelPill('tubeX='+targetTube.x, bx + (tx-bx)/2 - 30, y - 24, '#29ffc6');
         }
     }
@@ -520,11 +471,12 @@ function drawArrowHead(x,y,angle,color){
     context.save();
     context.translate(x,y);
     context.rotate(angle);
+    // Use (x,y) as the arrow tip. Triangle extends "back" along negative Y after rotation.
     context.fillStyle = color || '#00c8c8';
     context.beginPath();
-    context.moveTo(0,0);
-    context.lineTo(-5,-5);
-    context.lineTo(5,-5);
+    context.moveTo(0,0);          // tip
+    context.lineTo(-5,-5);        // base left
+    context.lineTo(5,-5);         // base right
     context.closePath();
     context.fill();
     context.restore();
