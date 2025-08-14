@@ -67,6 +67,10 @@ input[type=button]:active { transform:translateY(1px); }
 /* Episode history table */
 .episode-table-wrap { max-height:220px; overflow:auto; border:1px solid var(--border); border-radius:8px; padding:var(--gap-sm); background:var(--panel-alt); }
 .episode-table-wrap h3 { margin:0 0 6px; font-size:1.2rem; text-transform:uppercase; letter-spacing:.5px; color:var(--text-muted); }
+.episode-table-actions { display:flex; justify-content:flex-end; margin:-2px 0 4px; }
+.copy-btn { background:var(--accent); color:#111; border:none; padding:4px 10px; border-radius:5px; font-size:1.1rem; cursor:pointer; font-weight:600; box-shadow:0 1px 3px rgba(0,0,0,.4); transition:background .2s, transform .15s; }
+.copy-btn:hover { background:var(--accent-glow); }
+.copy-btn:active { transform:translateY(1px); }
 .episode-table { width:100%; border-collapse:collapse; font-size:1.1rem; }
 .episode-table thead { position:sticky; top:0; background:var(--panel-alt); }
 .episode-table th, .episode-table td { padding:4px 6px; text-align:right; }

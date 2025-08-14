@@ -258,6 +258,40 @@ function updateEpisodeTable() {
   }
 }
 
+function copyEpisodeScores() {
+  if (!episodeHistory.length) return;
+  var header = 'Episode\tScore';
+  var lines = episodeHistory.map(function(r){ return r.episode+'\t'+r.score; });
+  var tsv = [header].concat(lines).join('\n');
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(tsv).then(function(){
+      flashCopyFeedback();
+    }).catch(function(){ fallbackCopy(tsv); });
+  } else {
+    fallbackCopy(tsv);
+  }
+}
+
+function fallbackCopy(text) {
+  var ta = document.createElement('textarea');
+  ta.style.position='fixed'; ta.style.top='-2000px';
+  ta.value = text;
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); } catch(e){}
+  document.body.removeChild(ta);
+  flashCopyFeedback();
+}
+
+function flashCopyFeedback() {
+  var btn = document.querySelector('.copy-btn');
+  if(!btn) return;
+  var orig = btn.textContent;
+  btn.textContent = 'Copied!';
+  btn.disabled = true;
+  setTimeout(function(){ btn.textContent = orig; btn.disabled = false; }, 1200);
+}
+
 /**
  * This function is executed for every step in the game and is responsible for
  * forming the state and delegating the action to be taken back to our flappy
