@@ -48,6 +48,7 @@ function drawSpriteSheetImage(context, locRect, x, y) {
 }
 
 var canvas, context, gameState, score, groundX = 0, birdY, birdYSpeed, birdX = 5, birdFrame = 0, activeTube, tubes = [], collisionContext, scale, scoreLoc = { width: 5, height: 9 }, hiScore = 0;
+var paused = false; // tracks pause state
 var HOME = 0, GAME = 1, GAME_OVER = 2, HI_SCORE = 3;
 
 function initGame() {
@@ -80,6 +81,11 @@ function startGame() {
 }
 
 function loop() {
+    if (paused) {
+        // still render last frame to ensure overlay visibility
+        renderToScale();
+        return;
+    }
     switch (gameState) {
         case HOME:
             renderHome();
@@ -182,6 +188,7 @@ function checkCollision() {
             gameState = GAME_OVER;
             if (score > hiScore) {
                 hiScore = score + 0;
+                updateScores(true);
             }
             triggerGameOver();
             break;
@@ -198,10 +205,7 @@ function renderScore(score, xFunction, y) {
         scoreLoc.y = scoreLocs[index + 1];
         drawSpriteSheetImage(renderContext, scoreLoc, xFunction(i, length), y);
     }
-    var curMaxScore = Math.max(parseInt(document.getElementById("score").innerText), parseInt(score));
-    document.getElementById("score").innerText = curMaxScore.toString();
-    document.getElementById("rules").innerText = Object.keys(Q_table).length;
-    document.getElementById("trials").innerText = trials;
+    updateScores();
 }
 
 function renderScoreXGame(index, total) {
@@ -219,6 +223,40 @@ function renderGround(move) {
         }
     }
     drawSpriteSheetImage(renderContext, groundLoc, groundX, 31);
+}
+
+function updateScores(isNewHigh) {
+    var currentScoreEl = document.getElementById('currentScore');
+    if (currentScoreEl) currentScoreEl.innerText = score;
+    var highScoreEl = document.getElementById('highScore');
+    if (highScoreEl) {
+        highScoreEl.innerText = 'Best ' + hiScore;
+        if (isNewHigh) {
+            highScoreEl.classList.add('new-high');
+            setTimeout(function(){ highScoreEl.classList.remove('new-high'); }, 800);
+        }
+    }
+    var rulesEl = document.getElementById('rules');
+    if (rulesEl) rulesEl.innerText = Object.keys(Q_table).length;
+    var trialsEl = document.getElementById('trials');
+    if (trialsEl) trialsEl.innerText = trials;
+}
+
+function togglePause() {
+    paused = !paused;
+    var btn = document.getElementById('pauseBtn');
+    if (btn) {
+        btn.innerText = paused ? 'Resume' : 'Pause';
+        btn.setAttribute('aria-pressed', paused ? 'true' : 'false');
+    }
+    var overlay = document.getElementById('pauseOverlay');
+    if (overlay) {
+        if (paused) {
+            overlay.dataset.active = 'true';
+        } else {
+            delete overlay.dataset.active;
+        }
+    }
 }
 
 function updateBirdHome() {

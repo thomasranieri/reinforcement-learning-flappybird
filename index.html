@@ -8,121 +8,94 @@
 </head>
 
 <body>
-  <div id="wrapper">
-    <div id="content">
-      <canvas id="gameCanvas" width="32" height="32" />-->
-    </div>
-    <div id="sidebar">
-      <header>
-        <h1>Configurations</h1>
-      </header>
-      <form action="#">
-
-        <div class="field-group">
-          <label class="label">High Score:</label>
-          <div class="field">
-            <span id="score" class="number">0</span>
-          </div>
+  <div class="app">
+    <header class="hud" role="banner">
+      <div class="brand">Flappy RL</div>
+      <div class="scoreboard" aria-live="polite">
+        <div class="score-label">Score</div>
+        <div class="score-values">
+          <span id="currentScore" class="score-current">0</span>
+          <span id="highScore" class="score-best" title="High Score">Best 0</span>
         </div>
-        <div class="field-group">
-          <label class="label">Rules Learnt:</label>
-          <div class="field">
-            <span id="rules" class="number">0</span>
-          </div>
-        </div>
-        <div class="field-group">
-          <label class="label">Trials:</label>
-          <div class="field">
-            <span id="trials" class="number">0</span>
-          </div>
-        </div>
+      </div>
+      <div class="hud-actions">
+        <button id="pauseBtn" type="button" onclick="togglePause()" aria-pressed="false">Pause</button>
+      </div>
+    </header>
 
-        <div class="field-group">
-          <label for="game-speed" class="label">Game speed:</label>
-          <div class="field">
-            <input name="tel1" id="tel1" type="range" value="40" onchange="gameSpeedChange(this.value)">
-          </div>
+    <main class="layout" role="main">
+      <section class="stage-wrap">
+        <canvas id="gameCanvas" width="32" height="32"></canvas>
+        <div id="pauseOverlay" aria-hidden="true">Paused</div>
+      </section>
+      <aside id="sidebar" class="stats-panel" aria-label="Configuration and Stats">
+        <div class="panel-section small-print" id="information">
+          <p>This is forked from <a href="https://github.com/nileshsah/reinforcement-learning-flappybird">nileshsah</a>'s repository.</p>
+          <p>It uses Q-learning to train Flappy Bird.</p>
         </div>
-
-        <!--///////////////// SELECT MENU ///////////////////-->
-        <div class="field-group">
-          <div class="label">Environment:</div>
-          <div class="field">
-            <select id="env" onchange="environmentChange(this.value)">
-              <option value="Static">Static</option>
-              <option value="Random">Random</option>
-            </select>
+        <h2>Configurations</h2>
+        <form action="#">
+          <div class="inline-stats">
+            <div class="stat"><span class="stat-label">Rules</span><span id="rules" class="stat-value">0</span></div>
+            <div class="stat"><span class="stat-label">Trials</span><span id="trials" class="stat-value">0</span></div>
           </div>
-        </div>
-
-        <div class="field-group">
-          <div class="label">Display Target:</div>
-
-          <div class="field">
-            <div>
-              <input id="showTargetYes" name="radio" type="radio" value="Yes"
-                onchange="toggleDisplayTarget(this.value)">
-              <label for="showTargetYes">Yes</label>
+          <div class="episode-table-wrap">
+            <h3>Episode Scores</h3>
+            <div class="episode-table-actions">
             </div>
-            <div>
-              <input id="showTargetNo" name="radio" type="radio" value="No" checked
-                onchange="toggleDisplayTarget(this.value)">
-              <label for="showTargetNo">No</label>
+            <table class="episode-table" aria-label="Episode score history">
+              <thead><tr><th>Ep</th><th>Score</th></tr></thead>
+              <tbody id="episodeHistoryBody"></tbody>
+            </table>
+          </div>
+          <div class="field-group">
+            <label for="tel1" class="label">Game speed</label>
+            <div class="field">
+              <input name="tel1" id="tel1" type="range" value="40" onchange="gameSpeedChange(this.value)">
             </div>
           </div>
-
-        </div>
-
-        <div class="field-group">
-          <div class="label">Actions:</div>
-          <div class="field">
-            <input type="button" value="Save model to local storage" onclick="saveModel()">
+          <div class="field-group">
+            <div class="label">Environment</div>
+            <div class="field">
+              <select id="env" onchange="environmentChange(this.value)">
+                <option value="Static">Static</option>
+                <option value="Random">Random</option>
+              </select>
+            </div>
           </div>
-        </div>
-        <div class="field-group">
-          <div class="label"></div>
-
-          <div class="field">
-            <input type="button" value="Load model from local storage" onclick="loadModel()">
+          <div class="field-group">
+            <div class="label">Display Target</div>
+            <div class="field radios">
+              <label><input id="showTargetYes" name="radio" type="radio" value="Yes" onchange="toggleDisplayTarget(this.value)"> Yes</label>
+              <label><input id="showTargetNo" name="radio" type="radio" value="No" checked onchange="toggleDisplayTarget(this.value)"> No</label>
+            </div>
           </div>
-        </div>
-        <div>
-          <label>
-            <input type="radio" checked name="gameplayMode" value="normal" onchange="updateSliderVisibility()" /> Normal gameplay
-          </label>
-          <label>
-            <input type="radio" name="gameplayMode" value="manual" onchange="updateSliderVisibility()" /> Manual game state
-          </label>
-        </div>
-        <div class="field-group">
-          <div class="label"></div>
-          <div class="field">
-            <input type="button" value="Load pre-trained model" onclick="loadPreModel()">
+          <div class="field-group">
+            <div class="label">Model</div>
+            <div class="field actions-vertical">
+              <input type="button" value="Save model" onclick="saveModel()">
+              <input type="button" value="Load model" onclick="loadModel()">
+              <input type="button" value="Pre-trained model" onclick="loadPreModel()">
+            </div>
           </div>
-        </div>
-        <div id="sliders">
-          <label>
-            <input type="range" id="birdY" oninput="updateState()" min="0" max="30">
-            birdY
-          </label>
-          <label>
-            <input type="range" id="birdYSpeed" oninput="updateState()" min="-1" max="1.6" step="0.1">
-            birdYSpeed
-          </label>
-          <label>
-            <input type="range" id="tubeX" oninput="updateState()" min="0" max="40" step="0.1">
-            tubeX
-          </label>
-        </div>
-
-        <div>
-          Action: <span id="action"></span>
-        </div>
-      </form>
-    </div>
-    <script src="js/index.js"></script>
-    <script src="js/brain.js"></script>
-    <script src="js/config.js"></script>
+          <fieldset class="mode-switch">
+            <legend>Gameplay Mode</legend>
+            <label><input type="radio" checked name="gameplayMode" value="normal" onchange="updateSliderVisibility()"> Normal</label>
+            <label><input type="radio" name="gameplayMode" value="manual" onchange="updateSliderVisibility()"> Manual state</label>
+          </fieldset>
+          <div id="sliders" class="sliders">
+            <label>birdY <input type="range" id="birdY" oninput="updateState()" min="0" max="30"></label>
+            <label>birdYSpeed <input type="range" id="birdYSpeed" oninput="updateState()" min="-1" max="1.6" step="0.1"></label>
+            <label>tubeX <input type="range" id="tubeX" oninput="updateState()" min="0" max="40" step="0.1"></label>
+          </div>
+          <div class="action-indicator">Action: <span id="action"></span></div>
+        </form>
+      </aside>
+    </main>
+  </div>
+  <script src="js/index.js"></script>
+  <script src="js/brain.js"></script>
+  <script src="js/config.js"></script>
 </body>
 
 </html>

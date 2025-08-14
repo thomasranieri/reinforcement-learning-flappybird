@@ -67,6 +67,8 @@ var targetTube;
 
 // To maintain the count on the number of trials
 var trials = 0;
+var episodeHistory = []; // {episode:number, score:number}
+var episodeCounter = 0;
 
 /**
  * Function to lookup the estimated Q-value (reward) in the Q-table for a given
@@ -226,10 +228,34 @@ function triggerGameOver() {
   rewardTheBird(reward, false);
   console.log("GameOver:", score, Object.keys(Q_table).length, trials);
 
+  // Record episode score
+  episodeCounter++;
+  episodeHistory.push({ episode: episodeCounter, score: score });
+  if (episodeHistory.length > 200) { // cap to last 200
+    episodeHistory.splice(0, episodeHistory.length - 200);
+  }
+  updateEpisodeTable();
+
   // Reset the episode flag
   targetTubeIndex = -1;
   episodeFrameCount = 0;
   trials++;
+}
+
+function updateEpisodeTable() {
+  var body = document.getElementById('episodeHistoryBody');
+  if (!body) return;
+  // Build rows from latest (bottom) order is chronological
+  // To reduce DOM thrash, rebuild entire tbody markup
+  var rows = episodeHistory.map(function(item){
+    return '<tr><td>'+item.episode+'</td><td>'+item.score+'</td></tr>';
+  }).join('');
+  body.innerHTML = rows;
+  // add highlight to last row
+  if (body.lastElementChild) {
+    body.lastElementChild.classList.add('new-row');
+    setTimeout(function(){ if(body.lastElementChild){ body.lastElementChild.classList.remove('new-row'); } }, 1200);
+  }
 }
 
 /**
